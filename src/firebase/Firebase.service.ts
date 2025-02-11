@@ -1,25 +1,43 @@
 import { BadRequestException, Injectable, InternalServerErrorException } from '@nestjs/common';
 import { CreateAuthDto } from 'src/auth/dto/Create-auth.dto';
 import * as admin from 'firebase-admin'
+import { BackendUser } from 'src/auth/dto/BackendUser.dto';
+import { LoginAuthDto } from 'src/auth/dto/Login-auth.dto';
+/* import { firebaseAuth, firestore } from './firebase.config'; */
 
 @Injectable()
 export class FirebaseService {
-  async create(createAuthDto : CreateAuthDto) {
+
+  private userCollection = admin.firestore().collection("users");
+
+  async create(createAuthDto : BackendUser) {
     try {
-      const userRecord = await admin.auth().createUser({
+      const user = await admin.auth().createUser({
         email : createAuthDto.email,
         password : createAuthDto.password,
         displayName : createAuthDto.username
+      });
+
+      const userId = user.uid;
+      await this.userCollection.doc(userId).set({
+        id: userId,
+        name: createAuthDto.name,
+        birthDate: createAuthDto.birthDate,
+        timeBirth: createAuthDto.timeBirth,
+        country: createAuthDto.country,
+        city: createAuthDto.city,
+        createdAt: new Date(),
       })
-      console.log("Usuario Creado", userRecord)
-      return userRecord
+
+      return { message: 'Usuario registrado correctamente', uid: userId };
     } catch (error) {
       this.handleErrors(error)
     }
   }
 
-  login() {
-    return 'This action adds a new firebase';
+  async login() {
+
+    return 'This action adds a new firebase'
   }
 
   private handleErrors(error : any){

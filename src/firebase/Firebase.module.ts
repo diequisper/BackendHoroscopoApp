@@ -9,7 +9,7 @@ import * as admin from 'firebase-admin'
 
 export class FirebaseModule {
   constructor(){
-    const serviceAccount = require("../../../horoscopoapp-1eaa3-firebase-adminsdk-fbsvc-b052ed5c51.json");
+    const serviceAccount = require("../../json");
     admin.initializeApp({
       credential: admin.credential.cert(serviceAccount)
     });

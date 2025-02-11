@@ -2,15 +2,16 @@ import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/commo
 import { AuthService } from './Auth.service';
 import { CreateAuthDto } from './dto/Create-auth.dto';
 import { LoginAuthDto } from './dto/Login-auth.dto';
+import { BackendUser } from './dto/BackendUser.dto';
 
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post('registrar')
-  create(@Body() createAuthDto: CreateAuthDto) {
+  create(@Body() createAuthDto: BackendUser) {
     const data = this.authService.create(createAuthDto);
-    console.log("Usuario creado ", data);
+    console.log("Usuario creado ");
     return data
   }
 

@@ -1,19 +1,22 @@
+import { Transform } from "class-transformer";
 import { IsDate, IsEmail, IsNotEmpty, IsNumber, IsOptional, IsString, Length, Matches, MaxDate} from "class-validator";
 
 export class BackendUser{
 
-  @IsNumber()
-  id : string
+  /* @IsNumber()
+  id : string */
 
   @IsString()
   @IsNotEmpty({message : "El nombre es un campo requerido"})
   @Matches(/^[a-zA-Z ]+$/, {message : "No usar números o caracteres especiales para el nombre"})
   name : string;
 
+  @Transform(({ value }) => new Date(value))
   @IsDate({message : "El input no es de tipo fecha"})
   @MaxDate(new Date(), {message : "No usar fechas próximas"})
   birthDate : Date;
 
+  @Transform(({ value }) => value ? new Date(value) : null) 
   @IsOptional()
   timeBirth : Date;
 
