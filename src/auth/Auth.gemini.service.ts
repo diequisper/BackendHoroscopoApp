@@ -1,15 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import * as dotenv from 'dotenv';
-
-dotenv.config();
 
 @Injectable()
 export class GeminiService {
   private genAI: GoogleGenerativeAI;
 
   constructor() {
-    const apiKey = process.env.GEMINI_API_KEY ?? ''; 
+    const apiKey = process.env.GEMINI_API_KEY; 
 
     if (!apiKey) {
       throw new Error('GEMINI_API_KEY no está definida en el archivo .env');
@@ -20,9 +17,18 @@ export class GeminiService {
 
   async generateResponse(prompt: string): Promise<string> {
     try {
-      const model = this.genAI.getGenerativeModel({ model: 'gemini-pro' });
+      const model = this.genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
       const result = await model.generateContent(prompt);
-      return result.response.text();
+      
+      // Log the result to inspect its structure
+      console.log('Raw result:', result);
+  
+      // Check if result.response is a string or if you need to handle it differently
+      if (typeof result.response === 'string') {
+        return result.response;
+      } else {
+        return result.response.text ? result.response.text() : 'No response text available';
+      }
     } catch (error) {
       console.error('Error en Gemini API:', error);
       throw new Error('No se pudo obtener una respuesta de Gemini.');

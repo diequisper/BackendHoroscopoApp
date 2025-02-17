@@ -1,31 +1,63 @@
-import { Transform } from "class-transformer";
-import { IsDate, IsEmail, IsNotEmpty, IsNumber, IsOptional, IsString, Length, Matches, MaxDate} from "class-validator";
+import { IsDate, IsEmail, IsNotEmpty, IsOptional, IsString, Length, Matches, MaxDate} from "class-validator";
 
 export class BackendUser{
+  constructor(
+    id: string,
+    name: string,
+    birthDate: Date,
+    country: string,
+    email: string,
+    username: string,
+    password: string,
+    city ?: string,
+    timeBirth ?: Date,
+  ) {
+    this.id = id;
+    this.name = name;
+    this.birthDate = birthDate;
+    this.country = country;
+    this.email = email;
+    this.username = username;
+    this.password = password;
+    this.city = city;
+    this.timeBirth = timeBirth;
+  }
 
-  /* @IsNumber()
-  id : string */
+  toPlainObject() {
+    return {
+      id: this.id,
+      name: this.name,
+      birthDate: this.birthDate,
+      country: this.country,
+      email: this.email,
+      username: this.username,
+      password: this.password,
+      city: this.city,
+      timeBirth: this.timeBirth,
+    };
+  }
+
+  @IsString()
+  id : string
 
   @IsString()
   @IsNotEmpty({message : "El nombre es un campo requerido"})
   @Matches(/^[a-zA-Z ]+$/, {message : "No usar números o caracteres especiales para el nombre"})
   name : string;
 
-  @Transform(({ value }) => new Date(value))
   @IsDate({message : "El input no es de tipo fecha"})
   @MaxDate(new Date(), {message : "No usar fechas próximas"})
   birthDate : Date;
 
-  @Transform(({ value }) => value ? new Date(value) : null) 
   @IsOptional()
-  timeBirth : Date;
+  timeBirth ?: Date;
 
   @IsString()
   country : string;
 
   @IsOptional()
   @IsString()
-  city : string;
+  city ?: string;
 
   @IsEmail()
   email : string

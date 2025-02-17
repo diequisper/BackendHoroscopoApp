@@ -2,7 +2,6 @@ import { BadRequestException, Injectable, InternalServerErrorException } from '@
 import { CreateAuthDto } from 'src/auth/dto/Create-auth.dto';
 import * as admin from 'firebase-admin'
 import { BackendUser } from 'src/auth/dto/BackendUser.dto';
-import { LoginAuthDto } from 'src/auth/dto/Login-auth.dto';
 /* import { firebaseAuth, firestore } from './firebase.config'; */
 
 @Injectable()
@@ -10,7 +9,8 @@ export class FirebaseService {
 
   private userCollection = admin.firestore().collection("users");
 
-  async create(createAuthDto : BackendUser) {
+  async create(createAuthDto : CreateAuthDto, name : string, birthDate : Date, 
+    country : string, timeBirth ?: Date, city ?: string) {
     try {
       const user = await admin.auth().createUser({
         email : createAuthDto.email,
@@ -19,15 +19,9 @@ export class FirebaseService {
       });
 
       const userId = user.uid;
-      await this.userCollection.doc(userId).set({
-        id: userId,
-        name: createAuthDto.name,
-        birthDate: createAuthDto.birthDate,
-        timeBirth: createAuthDto.timeBirth,
-        country: createAuthDto.country,
-        city: createAuthDto.city,
-        createdAt: new Date(),
-      })
+      const backUser = new BackendUser(userId, name, birthDate, country, createAuthDto.email,
+        createAuthDto.username, createAuthDto.password, city, timeBirth)
+      await this.userCollection.doc(userId).create(backUser.toPlainObject())
 
       return { message: 'Usuario registrado correctamente', uid: userId };
     } catch (error) {
@@ -35,17 +29,42 @@ export class FirebaseService {
     }
   }
 
-  async login() {
+  async verify(token: string) {
+  try {
+    const decodedToken = await admin.auth().verifyIdToken(token);
+    return decodedToken;
+  } catch (error) {
+    console.error("Error verificacion de token:", error);
+    throw new Error("Failed to verify token");
+  }
+}
 
-    return 'This action adds a new firebase'
+  async login(username : string) : Promise<string | undefined> {
+    try {
+      const thisEmail = await admin.firestore().collection("users").where("username", "==", username.trim()).get();
+      if (thisEmail.empty) {
+        this.handleErrors(new Error("Usuario no encontrado"));
+        return undefined;
+      }
+      return thisEmail.docs[0].data().email
+    } catch (error) {
+      this.handleErrors(error)
+      return undefined
+    }
   }
 
-  private handleErrors(error : any){
-    if(error.code  === "auth/email-already-exists"){
-      throw new BadRequestException(error.errorInfo.message)
+  private handleErrors(error: any) {
+    const errorInfo = error?.errorInfo;
+    const errorMessage = errorInfo?.message || error?.message || 'Unknown error occurred';
+    const errorCode = errorInfo?.code || error?.code || 'UNKNOWN_CODE';
+  
+    console.error(`Firebase Error - Code: ${errorCode}, Message: ${errorMessage}`);
+  
+    if (errorCode === 'auth/email-already-exists') {
+      throw new BadRequestException(errorMessage);
     }
-    console.log(error.errorInfo.message)
-    throw new InternalServerErrorException("Internal Error")
+  
+    throw new InternalServerErrorException('Internal Error');
   }
 
 }

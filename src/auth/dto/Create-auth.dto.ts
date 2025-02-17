@@ -1,6 +1,16 @@
-import { IsDate, IsEmail, IsNotEmpty, IsNumber, IsOptional, IsString, Length, Matches, MaxDate} from "class-validator";
+import {IsEmail, IsNotEmpty, IsString, Length, Matches} from "class-validator";
 
 export class CreateAuthDto {
+  constructor(
+    email: string,
+    username: string,
+    password: string,
+  ) {
+    this.email = email;
+    this.username = username;
+    this.password = password; 
+  }
+
   @IsEmail()
   email : string
 
