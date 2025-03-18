@@ -20,10 +20,8 @@ export class GeminiService {
       const model = this.genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
       const result = await model.generateContent(prompt);
       
-      // Log the result to inspect its structure
       console.log('Raw result:', result);
-  
-      // Check if result.response is a string or if you need to handle it differently
+
       if (typeof result.response === 'string') {
         return result.response;
       } else {
